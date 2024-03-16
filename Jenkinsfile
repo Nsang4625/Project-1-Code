@@ -1,8 +1,8 @@
 pipeline {
     agent any
     tools {
-        jdk 'jdk17'
         nodejs 'node16'
+        jdk 'jdk17'
     }
     environment {
         registry = 'registry.cloudemon.me'
