@@ -4,11 +4,6 @@ pipeline {
         nodejs 'node16'
         jdk 'jdk17'
     }
-    environment {
-        registry = 'registry.cloudemon.me'
-        gitBranch = 'main'
-        gitUrl = 'https://github.com/Nsang4625/Project-1-Code.git'
-    }
     stages {
         stage('Install dependencies') {
             steps {
@@ -22,12 +17,12 @@ pipeline {
         }
         stage('Build and push image to registry') {
             steps {
-                ansiblePlaybook(credentialsId: 'server1', disableHostKeyChecking: true, installation: 'ansible', inventory: '/etc/ansible/hosts', playbook: '/home/sang/book1/be.yml', vaultTmpPath: '')
+                ansiblePlaybook(credentialsId: 'server1', installation: 'ansible', inventory: '/var/lib/jenkins/ansible/hosts', playbook: '/home/sang/book1/be.yml', vaultTmpPath: '', extraVars: [workdir:"${env.WORKSPACE}" ])
             }
         }
         stage('Deploy to server1') {
             steps {
-                ansibleAdhoc(credentialsId: 'server1', disableHostKeyChecking: true, installation: 'ansible', inventory: '/etc/ansible/hosts', pattern: 'server1', module: 'shell', moduleArguments: 'docker run --net host -e DB_PORT=3002 registry.cloudemon.me/builder/be:latest')
+                ansibleAdhoc(credentialsId: 'server1', installation: 'ansible', hostKeyChecking: false, inventory: '/var/lib/jenkins/ansible/hosts', hosts: 'server1', become: true, module: 'shell', moduleArguments: 'docker run --net host -d -e DB_PORT=3002 registry.cloudemon.me/project-1/be:latest')
             }
         }
     }
